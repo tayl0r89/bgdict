@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+  db:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data:/docker-entrypoint-initdb.d
+      - mysql-volume:/var/lib/mysql
+    depends_on:
+      download:
+        condition: service_completed_successfully
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+  download:
+    image: curlimages/curl:latest
+    volumes:
+      - ./data:/download
+    command: ["curl", "-o", "/download/db.sql.gz", "https://rechnik.chitanka.info/db.sql.gz"]
+volumes:
+  mysql-volume:
