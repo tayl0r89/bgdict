@@ -11,15 +11,17 @@ import (
 )
 
 const findWords = `-- name: FindWords :many
-SELECT derivative_form.id, derivative_form.name, derivative_form.name_stressed, derivative_form.name_broken, derivative_form.name_condensed, derivative_form.description, derivative_form.is_infinitive, derivative_form.base_word_id, word.id, word.name, word.name_stressed, word.name_broken, word.type_id 
+SELECT derivative_form.id, derivative_form.name, derivative_form.name_stressed, derivative_form.name_broken, derivative_form.name_condensed, derivative_form.description, derivative_form.is_infinitive, derivative_form.base_word_id, word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part 
 FROM derivative_form
 JOIN word on derivative_form.base_word_id = word.id
+JOIN word_type on word.type_id = word_type.id
 WHERE derivative_form.name = ?
 `
 
 type FindWordsRow struct {
 	DerivativeForm DerivativeForm
 	Word           Word
+	WordType       WordType
 }
 
 func (q *Queries) FindWords(ctx context.Context, name sql.NullString) ([]FindWordsRow, error) {
@@ -45,6 +47,9 @@ func (q *Queries) FindWords(ctx context.Context, name sql.NullString) ([]FindWor
 			&i.Word.NameStressed,
 			&i.Word.NameBroken,
 			&i.Word.TypeID,
+			&i.WordType.ID,
+			&i.WordType.Name,
+			&i.WordType.SpeechPart,
 		); err != nil {
 			return nil, err
 		}
@@ -60,19 +65,29 @@ func (q *Queries) FindWords(ctx context.Context, name sql.NullString) ([]FindWor
 }
 
 const getWord = `-- name: GetWord :one
-SELECT id, name, name_stressed, name_broken, type_id FROM word
-WHERE id = ? LIMIT 1
+SELECT word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part
+FROM word
+JOIN word_type on word.type_id = word_type.id
+WHERE word.id = ? LIMIT 1
 `
 
-func (q *Queries) GetWord(ctx context.Context, id int32) (Word, error) {
+type GetWordRow struct {
+	Word     Word
+	WordType WordType
+}
+
+func (q *Queries) GetWord(ctx context.Context, id int32) (GetWordRow, error) {
 	row := q.db.QueryRowContext(ctx, getWord, id)
-	var i Word
+	var i GetWordRow
 	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.NameStressed,
-		&i.NameBroken,
-		&i.TypeID,
+		&i.Word.ID,
+		&i.Word.Name,
+		&i.Word.NameStressed,
+		&i.Word.NameBroken,
+		&i.Word.TypeID,
+		&i.WordType.ID,
+		&i.WordType.Name,
+		&i.WordType.SpeechPart,
 	)
 	return i, err
 }

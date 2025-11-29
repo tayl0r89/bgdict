@@ -1,11 +1,12 @@
 package api
 
 type Word struct {
-	Id           int    `json:"id"`
-	Name         string `json:"name"`
-	NameStressed string `json:"nameStressed"`
-	NameBroken   string `json:"nameBroken"`
-	TypeId       int    `json:"typeId"`
+	Id           int      `json:"id"`
+	Name         string   `json:"name"`
+	NameStressed string   `json:"nameStressed"`
+	NameBroken   string   `json:"nameBroken"`
+	TypeId       int      `json:"typeId"`
+	Type         WordType `json:"wordType"`
 }
 
 type WordType struct {

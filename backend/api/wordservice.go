@@ -38,13 +38,18 @@ func getOrZero(s sql.NullInt32) int {
 	return int(s.Int32)
 }
 
-func wordRowToDto(r *db.Word) *Word {
+func wordRowToDto(r *db.Word, wt *db.WordType) *Word {
 	return &Word{
 		Id:           int(r.ID),
 		Name:         getOrEmpty(r.Name),
 		NameStressed: getOrEmpty(r.NameStressed),
 		NameBroken:   getOrEmpty(r.NameBroken),
 		TypeId:       getOrZero(r.TypeID),
+		Type: WordType{
+			Id:         int(wt.ID),
+			Name:       getOrEmpty(wt.Name),
+			SpeechPart: getOrEmpty(wt.SpeechPart),
+		},
 	}
 }
 
@@ -62,6 +67,11 @@ func findWordRowToDto(r *db.FindWordsRow) *DerivativeForm {
 			NameStressed: getOrEmpty(r.Word.NameStressed),
 			NameBroken:   getOrEmpty(r.Word.NameBroken),
 			TypeId:       getOrZero(r.Word.TypeID),
+			Type: WordType{
+				Id:         int(r.WordType.ID),
+				Name:       getOrEmpty(r.WordType.Name),
+				SpeechPart: getOrEmpty(r.WordType.SpeechPart),
+			},
 		},
 	}
 }
@@ -93,5 +103,5 @@ func (l *dbWordLoader) GetWordById(id int) (*Word, error) {
 		log.Println(err.Error())
 		return nil, err
 	}
-	return wordRowToDto(&res), nil
+	return wordRowToDto(&res.Word, &res.WordType), nil
 }
