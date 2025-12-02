@@ -21,3 +21,5 @@ The system will take a few minutes to start on the first deployment as it downlo
 ## Acknowledgements
 
 The data used by this system is the database hosted by https://rechnik.chitanka.info/.
+
+This dataset has had translations added to it. These translations were taken from KBEDic Buglarian to English dictionary. Available on sourceforge at https://sourceforge.net/projects/kbedic/.
