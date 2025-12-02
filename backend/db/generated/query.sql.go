@@ -91,3 +91,47 @@ func (q *Queries) GetWord(ctx context.Context, id int32) (GetWordRow, error) {
 	)
 	return i, err
 }
+
+const getWordByName = `-- name: GetWordByName :many
+SELECT word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part
+FROM word
+JOIN word_type on word.type_id = word_type.id
+WHERE word.name = ?
+`
+
+type GetWordByNameRow struct {
+	Word     Word
+	WordType WordType
+}
+
+func (q *Queries) GetWordByName(ctx context.Context, name sql.NullString) ([]GetWordByNameRow, error) {
+	rows, err := q.db.QueryContext(ctx, getWordByName, name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetWordByNameRow
+	for rows.Next() {
+		var i GetWordByNameRow
+		if err := rows.Scan(
+			&i.Word.ID,
+			&i.Word.Name,
+			&i.Word.NameStressed,
+			&i.Word.NameBroken,
+			&i.Word.TypeID,
+			&i.WordType.ID,
+			&i.WordType.Name,
+			&i.WordType.SpeechPart,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

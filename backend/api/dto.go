@@ -1,5 +1,10 @@
 package api
 
+type WordResult struct {
+	BaseWord   Word            `json:"baseWord"`
+	Derivative *DerivativeForm `json:"derivative"`
+}
+
 type Word struct {
 	Id           int      `json:"id"`
 	Name         string   `json:"name"`

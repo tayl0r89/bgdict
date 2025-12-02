@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -57,5 +58,56 @@ func GetWordByIdHandler(repo WordRepository) gin.HandlerFunc {
 		}
 
 		c.IndentedJSON(http.StatusOK, res)
+	}
+}
+
+type PostBulkSearchBody struct {
+	Queries []string `json:"queries" form:"queries" binding:"required"`
+}
+
+func BulkSearchHandler(repo WordRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var body PostBulkSearchBody
+		if err := c.ShouldBind(&body); err != nil {
+			c.JSON(400, err.Error())
+			return
+		}
+
+		results := make([]*WordResult, 0)
+		for _, item := range body.Queries {
+			found, search_err := repo.SearchWord(item)
+			if search_err == nil && len(found) > 0 {
+				results = append(results, found...)
+			}
+		}
+
+		c.JSON(200, results)
+	}
+}
+
+type searchParams struct {
+	Query string `form:"query" json:"query" binding:"required"`
+}
+
+func SearchHandler(repo WordRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Println("HERE")
+		var params searchParams = searchParams{}
+		err := c.BindQuery(&params)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "A suitable query was not provided."})
+			return
+		}
+
+		res, finderr := repo.SearchWord(params.Query)
+
+		log.Println(res)
+		if finderr != nil {
+			c.JSON(http.StatusInternalServerError, "Failed finding word")
+			return
+		}
+
+		c.JSON(http.StatusOK, res)
 	}
 }

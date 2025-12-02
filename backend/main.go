@@ -31,6 +31,8 @@ func main() {
 
 	router.GET("/find", api.FindWordHandler(wordRepository))
 	router.GET("/id", api.GetWordByIdHandler(wordRepository))
+	router.POST("/bulk", api.BulkSearchHandler(wordRepository))
+	router.GET("/search", api.SearchHandler(wordRepository))
 
 	router.Run(fmt.Sprintf("%s:%s", hostname, port))
 }
