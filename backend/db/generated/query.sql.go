@@ -11,17 +11,19 @@ import (
 )
 
 const findWords = `-- name: FindWords :many
-SELECT derivative_form.id, derivative_form.name, derivative_form.name_stressed, derivative_form.name_broken, derivative_form.name_condensed, derivative_form.description, derivative_form.is_infinitive, derivative_form.base_word_id, word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part 
+SELECT derivative_form.id, derivative_form.name, derivative_form.name_stressed, derivative_form.name_broken, derivative_form.name_condensed, derivative_form.description, derivative_form.is_infinitive, derivative_form.base_word_id, word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part, word_translation.id, word_translation.word_id, word_translation.lang, word_translation.content 
 FROM derivative_form
 JOIN word on derivative_form.base_word_id = word.id
 JOIN word_type on word.type_id = word_type.id
+JOIN word_translation on word_translation.word_id = word.id
 WHERE derivative_form.name = ?
 `
 
 type FindWordsRow struct {
-	DerivativeForm DerivativeForm
-	Word           Word
-	WordType       WordType
+	DerivativeForm  DerivativeForm
+	Word            Word
+	WordType        WordType
+	WordTranslation WordTranslation
 }
 
 func (q *Queries) FindWords(ctx context.Context, name sql.NullString) ([]FindWordsRow, error) {
@@ -50,6 +52,10 @@ func (q *Queries) FindWords(ctx context.Context, name sql.NullString) ([]FindWor
 			&i.WordType.ID,
 			&i.WordType.Name,
 			&i.WordType.SpeechPart,
+			&i.WordTranslation.ID,
+			&i.WordTranslation.WordID,
+			&i.WordTranslation.Lang,
+			&i.WordTranslation.Content,
 		); err != nil {
 			return nil, err
 		}
@@ -65,15 +71,17 @@ func (q *Queries) FindWords(ctx context.Context, name sql.NullString) ([]FindWor
 }
 
 const getWord = `-- name: GetWord :one
-SELECT word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part
+SELECT word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part, word_translation.id, word_translation.word_id, word_translation.lang, word_translation.content
 FROM word
 JOIN word_type on word.type_id = word_type.id
+JOIN word_translation on word_translation.word_id = word.id
 WHERE word.id = ? LIMIT 1
 `
 
 type GetWordRow struct {
-	Word     Word
-	WordType WordType
+	Word            Word
+	WordType        WordType
+	WordTranslation WordTranslation
 }
 
 func (q *Queries) GetWord(ctx context.Context, id int32) (GetWordRow, error) {
@@ -88,20 +96,26 @@ func (q *Queries) GetWord(ctx context.Context, id int32) (GetWordRow, error) {
 		&i.WordType.ID,
 		&i.WordType.Name,
 		&i.WordType.SpeechPart,
+		&i.WordTranslation.ID,
+		&i.WordTranslation.WordID,
+		&i.WordTranslation.Lang,
+		&i.WordTranslation.Content,
 	)
 	return i, err
 }
 
 const getWordByName = `-- name: GetWordByName :many
-SELECT word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part
+SELECT word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part, word_translation.id, word_translation.word_id, word_translation.lang, word_translation.content
 FROM word
 JOIN word_type on word.type_id = word_type.id
+JOIN word_translation on word_translation.word_id = word.id
 WHERE word.name = ?
 `
 
 type GetWordByNameRow struct {
-	Word     Word
-	WordType WordType
+	Word            Word
+	WordType        WordType
+	WordTranslation WordTranslation
 }
 
 func (q *Queries) GetWordByName(ctx context.Context, name sql.NullString) ([]GetWordByNameRow, error) {
@@ -122,6 +136,10 @@ func (q *Queries) GetWordByName(ctx context.Context, name sql.NullString) ([]Get
 			&i.WordType.ID,
 			&i.WordType.Name,
 			&i.WordType.SpeechPart,
+			&i.WordTranslation.ID,
+			&i.WordTranslation.WordID,
+			&i.WordTranslation.Lang,
+			&i.WordTranslation.Content,
 		); err != nil {
 			return nil, err
 		}

@@ -39,41 +39,50 @@ func getOrZero(s sql.NullInt32) int {
 	return int(s.Int32)
 }
 
-func wordRowToDto(r *db.Word, wt *db.WordType) *Word {
+func translationToDto(r *db.WordTranslation) *WordTranslation {
+	if r == nil {
+		return nil
+	}
+	return &WordTranslation{
+		Id:      int(r.ID),
+		Lang:    getOrEmpty(r.Lang),
+		Content: getOrEmpty(r.Content),
+		WordId:  getOrZero(r.WordID),
+	}
+}
+
+func wordTypeToDto(r *db.WordType) *WordType {
+	if r == nil {
+		return nil
+	}
+	return &WordType{
+		Id:         int(r.ID),
+		Name:       getOrEmpty(r.Name),
+		SpeechPart: getOrEmpty(r.SpeechPart),
+	}
+}
+
+func wordRowToDto(r *db.Word, wt *db.WordType, wtr *db.WordTranslation) *Word {
 	return &Word{
 		Id:           int(r.ID),
 		Name:         getOrEmpty(r.Name),
 		NameStressed: getOrEmpty(r.NameStressed),
 		NameBroken:   getOrEmpty(r.NameBroken),
 		TypeId:       getOrZero(r.TypeID),
-		Type: WordType{
-			Id:         int(wt.ID),
-			Name:       getOrEmpty(wt.Name),
-			SpeechPart: getOrEmpty(wt.SpeechPart),
-		},
+		Type:         wordTypeToDto(wt),
+		Translation:  translationToDto(wtr),
 	}
 }
 
 func findWordRowToDto(r *db.FindWordsRow) *DerivativeForm {
 	return &DerivativeForm{
-		Id:           getOrZero(r.DerivativeForm.ID),
+		Id:           int(r.DerivativeForm.ID),
 		Name:         getOrEmpty(r.DerivativeForm.Name),
 		NameBroken:   getOrEmpty(r.DerivativeForm.NameBroken),
 		NameStressed: getOrEmpty(r.DerivativeForm.NameStressed),
 		IsInfinitive: getOrZero(r.DerivativeForm.IsInfinitive),
 		BaseWordId:   getOrZero(r.DerivativeForm.BaseWordID),
-		BaseWord: Word{
-			Id:           int(r.Word.ID),
-			Name:         getOrEmpty(r.Word.Name),
-			NameStressed: getOrEmpty(r.Word.NameStressed),
-			NameBroken:   getOrEmpty(r.Word.NameBroken),
-			TypeId:       getOrZero(r.Word.TypeID),
-			Type: WordType{
-				Id:         int(r.WordType.ID),
-				Name:       getOrEmpty(r.WordType.Name),
-				SpeechPart: getOrEmpty(r.WordType.SpeechPart),
-			},
-		},
+		BaseWord:     wordRowToDto(&r.Word, &r.WordType, &r.WordTranslation),
 	}
 }
 
@@ -104,7 +113,7 @@ func (l *dbWordLoader) GetWordById(id int) (*Word, error) {
 		log.Println(err.Error())
 		return nil, err
 	}
-	return wordRowToDto(&res.Word, &res.WordType), nil
+	return wordRowToDto(&res.Word, &res.WordType, &res.WordTranslation), nil
 }
 
 func wordByNameRowToResult(res *db.GetWordByNameRow) WordResult {
@@ -115,40 +124,13 @@ func wordByNameRowToResult(res *db.GetWordByNameRow) WordResult {
 			NameStressed: getOrEmpty(res.Word.NameStressed),
 			NameBroken:   getOrEmpty(res.Word.NameBroken),
 			TypeId:       int(res.Word.TypeID.Int32),
-			Type: WordType{
-				Id:         int(res.WordType.ID),
-				Name:       getOrEmpty(res.WordType.Name),
-				SpeechPart: getOrEmpty(res.WordType.SpeechPart),
-			},
+			Type:         wordTypeToDto(&res.WordType),
 		},
 		Derivative: nil,
 	}
 }
 
 func findWordRowToResult(res *db.FindWordsRow) WordResult {
-	var derivativeForm *DerivativeForm = nil
-	if res.DerivativeForm.ID.Valid {
-		derivativeForm = &DerivativeForm{
-			Id:           getOrZero(res.DerivativeForm.ID),
-			Name:         getOrEmpty(res.DerivativeForm.Name),
-			NameBroken:   getOrEmpty(res.DerivativeForm.NameBroken),
-			NameStressed: getOrEmpty(res.DerivativeForm.NameStressed),
-			IsInfinitive: getOrZero(res.DerivativeForm.IsInfinitive),
-			BaseWordId:   getOrZero(res.DerivativeForm.BaseWordID),
-			BaseWord: Word{
-				Id:           int(res.Word.ID),
-				Name:         getOrEmpty(res.Word.Name),
-				NameStressed: getOrEmpty(res.Word.NameStressed),
-				NameBroken:   getOrEmpty(res.Word.NameBroken),
-				TypeId:       int(res.Word.TypeID.Int32),
-				Type: WordType{
-					Id:         int(res.WordType.ID),
-					Name:       getOrEmpty(res.WordType.Name),
-					SpeechPart: getOrEmpty(res.WordType.SpeechPart),
-				},
-			},
-		}
-	}
 	return WordResult{
 		BaseWord: Word{
 			Id:           int(res.Word.ID),
@@ -156,13 +138,17 @@ func findWordRowToResult(res *db.FindWordsRow) WordResult {
 			NameStressed: getOrEmpty(res.Word.NameStressed),
 			NameBroken:   getOrEmpty(res.Word.NameBroken),
 			TypeId:       int(res.Word.TypeID.Int32),
-			Type: WordType{
-				Id:         int(res.WordType.ID),
-				Name:       getOrEmpty(res.WordType.Name),
-				SpeechPart: getOrEmpty(res.WordType.SpeechPart),
-			},
+			Type:         wordTypeToDto(&res.WordType),
 		},
-		Derivative: derivativeForm,
+		Derivative: &DerivativeForm{
+			Id:           int(res.DerivativeForm.ID),
+			Name:         getOrEmpty(res.DerivativeForm.Name),
+			NameBroken:   getOrEmpty(res.DerivativeForm.NameBroken),
+			NameStressed: getOrEmpty(res.DerivativeForm.NameStressed),
+			IsInfinitive: getOrZero(res.DerivativeForm.IsInfinitive),
+			BaseWordId:   getOrZero(res.DerivativeForm.BaseWordID),
+			BaseWord:     wordRowToDto(&res.Word, &res.WordType, &res.WordTranslation),
+		},
 	}
 }
 

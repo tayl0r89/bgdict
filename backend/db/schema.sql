@@ -13,7 +13,7 @@ CREATE TABLE word_type (
 );
 
 CREATE TABLE derivative_form (
-    id int,
+    id int NOT NULL PRIMARY KEY,
     name TEXT,
     name_stressed TEXT,
     name_broken TEXT,
@@ -28,3 +28,10 @@ CREATE TABLE incorrect_form (
     name TEXT,
     correct_word_id int
 );
+
+create TABLE word_translation (
+    id int NOT NULL PRIMARY KEY,
+    word_id int,
+    lang TEXT,
+    content TEXT
+)

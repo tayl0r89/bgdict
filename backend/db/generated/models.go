@@ -9,7 +9,7 @@ import (
 )
 
 type DerivativeForm struct {
-	ID            sql.NullInt32
+	ID            int32
 	Name          sql.NullString
 	NameStressed  sql.NullString
 	NameBroken    sql.NullString
@@ -31,6 +31,13 @@ type Word struct {
 	NameStressed sql.NullString
 	NameBroken   sql.NullString
 	TypeID       sql.NullInt32
+}
+
+type WordTranslation struct {
+	ID      int32
+	WordID  sql.NullInt32
+	Lang    sql.NullString
+	Content sql.NullString
 }
 
 type WordType struct {

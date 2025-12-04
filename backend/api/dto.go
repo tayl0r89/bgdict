@@ -5,13 +5,21 @@ type WordResult struct {
 	Derivative *DerivativeForm `json:"derivative"`
 }
 
+type WordTranslation struct {
+	Id      int    `json:"id"`
+	Lang    string `json:"lang"`
+	Content string `json:"content"`
+	WordId  int    `json:"wordId"`
+}
+
 type Word struct {
-	Id           int      `json:"id"`
-	Name         string   `json:"name"`
-	NameStressed string   `json:"nameStressed"`
-	NameBroken   string   `json:"nameBroken"`
-	TypeId       int      `json:"typeId"`
-	Type         WordType `json:"wordType"`
+	Id           int              `json:"id"`
+	Name         string           `json:"name"`
+	NameStressed string           `json:"nameStressed"`
+	NameBroken   string           `json:"nameBroken"`
+	TypeId       int              `json:"typeId"`
+	Type         *WordType        `json:"wordType"`
+	Translation  *WordTranslation `json:"translation"`
 }
 
 type WordType struct {
@@ -27,7 +35,7 @@ type DerivativeForm struct {
 	NameStressed string `json:"nameStressed"`
 	IsInfinitive int    `json:"isInfinitive"`
 	BaseWordId   int    `json:"baseWordId"`
-	BaseWord     Word   `json:"word"`
+	BaseWord     *Word  `json:"word"`
 }
 
 type IncorrectForm struct {
