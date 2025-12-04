@@ -125,6 +125,7 @@ func wordByNameRowToResult(res *db.GetWordByNameRow) WordResult {
 			NameBroken:   getOrEmpty(res.Word.NameBroken),
 			TypeId:       int(res.Word.TypeID.Int32),
 			Type:         wordTypeToDto(&res.WordType),
+			Translation:  translationToDto(&res.WordTranslation),
 		},
 		Derivative: nil,
 	}
@@ -139,6 +140,7 @@ func findWordRowToResult(res *db.FindWordsRow) WordResult {
 			NameBroken:   getOrEmpty(res.Word.NameBroken),
 			TypeId:       int(res.Word.TypeID.Int32),
 			Type:         wordTypeToDto(&res.WordType),
+			Translation:  translationToDto(&res.WordTranslation),
 		},
 		Derivative: &DerivativeForm{
 			Id:           int(res.DerivativeForm.ID),
