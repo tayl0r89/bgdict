@@ -65,6 +65,10 @@ type PostBulkSearchBody struct {
 	Queries []string `json:"queries" form:"queries" binding:"required"`
 }
 
+type BulkSearchResult struct {
+	Results []*WordResult `json:"results"`
+}
+
 func BulkSearchHandler(repo WordRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body PostBulkSearchBody
@@ -81,7 +85,7 @@ func BulkSearchHandler(repo WordRepository) gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(200, results)
+		c.JSON(200, BulkSearchResult{Results: results})
 	}
 }
 
