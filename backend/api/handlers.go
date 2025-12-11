@@ -115,3 +115,31 @@ func SearchHandler(repo WordRepository) gin.HandlerFunc {
 		c.JSON(http.StatusOK, res)
 	}
 }
+
+type PostBulkByIdBody struct {
+	Queries []int `json:"queries" form:"queries" binding:"required"`
+}
+
+type BulkByIdResult struct {
+	Results []*Word `json:"results"`
+}
+
+func BulkByIdHandler(repo WordRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var body PostBulkByIdBody
+		if err := c.ShouldBind(&body); err != nil {
+			c.JSON(400, err.Error())
+			return
+		}
+
+		results := make([]*Word, 0)
+		for _, item := range body.Queries {
+			found, search_err := repo.GetWordById(item)
+			if search_err == nil {
+				results = append(results, found)
+			}
+		}
+
+		c.JSON(200, BulkByIdResult{Results: results})
+	}
+}
