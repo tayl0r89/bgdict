@@ -25,7 +25,7 @@ type Word struct {
 type WordType struct {
 	Id         int    `json:"id"`
 	Name       string `json:"name"`
-	SpeechPart string `json:"SpeechPart"`
+	SpeechPart string `json:"speechPart"`
 }
 
 type DerivativeForm struct {
