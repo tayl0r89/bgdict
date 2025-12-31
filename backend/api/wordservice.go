@@ -81,6 +81,7 @@ func findWordRowToDto(r *db.FindWordsRow) *DerivativeForm {
 		Name:         getOrEmpty(r.DerivativeForm.Name),
 		NameBroken:   getOrEmpty(r.DerivativeForm.NameBroken),
 		NameStressed: getOrEmpty(r.DerivativeForm.NameStressed),
+		Description:  getOrEmpty(r.DerivativeForm.Description),
 		IsInfinitive: getOrZero(r.DerivativeForm.IsInfinitive),
 		BaseWordId:   getOrZero(r.DerivativeForm.BaseWordID),
 		BaseWord:     wordRowToDto(&r.Word, &r.WordType, &r.WordTranslation),
@@ -151,6 +152,7 @@ func findWordRowToResult(res *db.FindWordsRow) WordResult {
 			IsInfinitive: getOrZero(res.DerivativeForm.IsInfinitive),
 			BaseWordId:   getOrZero(res.DerivativeForm.BaseWordID),
 			BaseWord:     wordRowToDto(&res.Word, &res.WordType, &res.WordTranslation),
+			Description:  getOrEmpty(res.DerivativeForm.Description),
 		},
 	}
 }
@@ -178,6 +180,7 @@ func (l *dbWordLoader) GetDerivedForms(id int) ([]*DerivativeForm, error) {
 			Name:         item.DerivativeForm.Name.String,
 			NameBroken:   item.DerivativeForm.NameBroken.String,
 			NameStressed: item.DerivativeForm.NameStressed.String,
+			Description:  item.DerivativeForm.Description.String,
 			IsInfinitive: int(item.DerivativeForm.IsInfinitive.Int32),
 			BaseWord:     word,
 			BaseWordId:   id,

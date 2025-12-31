@@ -36,6 +36,7 @@ type DerivativeForm struct {
 	IsInfinitive int    `json:"isInfinitive"`
 	BaseWordId   int    `json:"baseWordId"`
 	BaseWord     *Word  `json:"word"`
+	Description  string `json:"description"`
 }
 
 type IncorrectForm struct {
