@@ -5,6 +5,11 @@ JOIN word_type on word.type_id = word_type.id
 JOIN word_translation on word_translation.word_id = word.id
 WHERE word.id = ? LIMIT 1;
 
+-- name: GetDerived :many
+SELECT sqlc.embed(derivative_form)
+FROM derivative_form
+WHERE derivative_form.base_word_id = ?;
+
 -- name: GetWordByName :many
 SELECT sqlc.embed(word), sqlc.embed(word_type), sqlc.embed(word_translation)
 FROM word

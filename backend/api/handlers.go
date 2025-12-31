@@ -120,8 +120,13 @@ type PostBulkByIdBody struct {
 	Queries []int `json:"queries" form:"queries" binding:"required"`
 }
 
+type ByIdWordResult struct {
+	Word            *Word             `json:"word"`
+	DerivativeForms []*DerivativeForm `json:"derivativeForms"`
+}
+
 type BulkByIdResult struct {
-	Results []*Word `json:"results"`
+	Results []*ByIdWordResult `json:"results"`
 }
 
 func BulkByIdHandler(repo WordRepository) gin.HandlerFunc {
@@ -132,12 +137,24 @@ func BulkByIdHandler(repo WordRepository) gin.HandlerFunc {
 			return
 		}
 
-		results := make([]*Word, 0)
+		results := make([]*ByIdWordResult, 0)
 		for _, item := range body.Queries {
 			found, search_err := repo.GetWordById(item)
-			if search_err == nil {
-				results = append(results, found)
+			derived_found, derived_err := repo.GetDerivedForms(item)
+			if search_err != nil {
+				log.Println(search_err.Error())
+				c.JSON(400, search_err.Error())
+				return
 			}
+			if derived_err != nil {
+				log.Println(derived_err.Error())
+				c.JSON(400, derived_err.Error())
+				return
+			}
+			results = append(results, &ByIdWordResult{
+				Word:            found,
+				DerivativeForms: derived_found,
+			})
 		}
 
 		c.JSON(200, BulkByIdResult{Results: results})

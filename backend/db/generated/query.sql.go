@@ -70,6 +70,48 @@ func (q *Queries) FindWords(ctx context.Context, name sql.NullString) ([]FindWor
 	return items, nil
 }
 
+const getDerived = `-- name: GetDerived :many
+SELECT derivative_form.id, derivative_form.name, derivative_form.name_stressed, derivative_form.name_broken, derivative_form.name_condensed, derivative_form.description, derivative_form.is_infinitive, derivative_form.base_word_id
+FROM derivative_form
+WHERE derivative_form.base_word_id = ?
+`
+
+type GetDerivedRow struct {
+	DerivativeForm DerivativeForm
+}
+
+func (q *Queries) GetDerived(ctx context.Context, baseWordID sql.NullInt32) ([]GetDerivedRow, error) {
+	rows, err := q.db.QueryContext(ctx, getDerived, baseWordID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetDerivedRow
+	for rows.Next() {
+		var i GetDerivedRow
+		if err := rows.Scan(
+			&i.DerivativeForm.ID,
+			&i.DerivativeForm.Name,
+			&i.DerivativeForm.NameStressed,
+			&i.DerivativeForm.NameBroken,
+			&i.DerivativeForm.NameCondensed,
+			&i.DerivativeForm.Description,
+			&i.DerivativeForm.IsInfinitive,
+			&i.DerivativeForm.BaseWordID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getWord = `-- name: GetWord :one
 SELECT word.id, word.name, word.name_stressed, word.name_broken, word.type_id, word_type.id, word_type.name, word_type.speech_part, word_translation.id, word_translation.word_id, word_translation.lang, word_translation.content
 FROM word

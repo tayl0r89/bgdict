@@ -12,6 +12,7 @@ type WordRepository interface {
 	FindWords(query string) ([]*DerivativeForm, error)
 	GetWordById(id int) (*Word, error)
 	SearchWord(query string) ([]*WordResult, error)
+	GetDerivedForms(id int) ([]*DerivativeForm, error)
 }
 
 type dbWordLoader struct {
@@ -152,6 +153,38 @@ func findWordRowToResult(res *db.FindWordsRow) WordResult {
 			BaseWord:     wordRowToDto(&res.Word, &res.WordType, &res.WordTranslation),
 		},
 	}
+}
+
+func (l *dbWordLoader) GetDerivedForms(id int) ([]*DerivativeForm, error) {
+	ctx := context.Background()
+
+	word, word_err := l.GetWordById(id)
+	if word_err != nil {
+		log.Println(word_err.Error())
+		return nil, word_err
+	}
+
+	var result = make([]*DerivativeForm, 0)
+
+	derived, err := l.queries.GetDerived(ctx, sql.NullInt32{Valid: true, Int32: int32(id)})
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	for _, item := range derived {
+		result = append(result, &DerivativeForm{
+			Id:           int(item.DerivativeForm.ID),
+			Name:         item.DerivativeForm.Name.String,
+			NameBroken:   item.DerivativeForm.NameBroken.String,
+			NameStressed: item.DerivativeForm.NameStressed.String,
+			IsInfinitive: int(item.DerivativeForm.IsInfinitive.Int32),
+			BaseWord:     word,
+			BaseWordId:   id,
+		})
+	}
+
+	return result, nil
 }
 
 func (l *dbWordLoader) SearchWord(query string) ([]*WordResult, error) {
